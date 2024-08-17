@@ -1,4 +1,3 @@
-const PORT = 8000;
 const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -102,4 +101,4 @@ app.get('/news/:newspaperId', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
+module.exports = app;
