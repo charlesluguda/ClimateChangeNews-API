@@ -23,9 +23,12 @@ const headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 };
 
-const articles = [];
+app.get('/', (req, res) => {
+  res.json('Welcome to my Climate Change News API');
+});
 
-const fetchArticles = async () => {
+app.get('/news', async (req, res) => {
+  const articles = [];
   const fetchPromises = newspapers.map(newspaper => {
     return axios.get(newspaper.address, { headers })
       .then(response => {
@@ -53,15 +56,11 @@ const fetchArticles = async () => {
   });
 
   await Promise.all(fetchPromises);
-};
 
-fetchArticles();
+  if (articles.length === 0) {
+    return res.status(500).json({ error: 'No articles found or an error occurred while fetching them.' });
+  }
 
-app.get('/', (req, res) => {
-  res.json('Welcome to my Climate Change News API');
-});
-
-app.get('/news', (req, res) => {
   res.json(articles);
 });
 
@@ -93,6 +92,10 @@ app.get('/news/:newspaperId', async (req, res) => {
         source: newspaperId
       });
     });
+
+    if (specificArticles.length === 0) {
+      return res.status(404).json({ error: 'No articles found for this newspaper.' });
+    }
 
     res.json(specificArticles);
   } catch (error) {
