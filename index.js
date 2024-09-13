@@ -1,3 +1,4 @@
+const PORT = 8000;
 const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -23,12 +24,9 @@ const headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 };
 
-app.get('/', (req, res) => {
-  res.json('Welcome to my Climate Change News API');
-});
+const articles = [];
 
-app.get('/news', async (req, res) => {
-  const articles = [];
+const fetchArticles = async () => {
   const fetchPromises = newspapers.map(newspaper => {
     return axios.get(newspaper.address, { headers })
       .then(response => {
@@ -56,11 +54,15 @@ app.get('/news', async (req, res) => {
   });
 
   await Promise.all(fetchPromises);
+};
 
-  if (articles.length === 0) {
-    return res.status(500).json({ error: 'No articles found or an error occurred while fetching them.' });
-  }
+fetchArticles();
 
+app.get('/', (req, res) => {
+  res.json('Welcome to my Climate Change News API');
+});
+
+app.get('/news', (req, res) => {
   res.json(articles);
 });
 
@@ -93,15 +95,13 @@ app.get('/news/:newspaperId', async (req, res) => {
       });
     });
 
-    if (specificArticles.length === 0) {
-      return res.status(404).json({ error: 'No articles found for this newspaper.' });
-    }
-
     res.json(specificArticles);
   } catch (error) {
     console.error(`Error fetching ${newspaperId}: `, error.message);
     res.status(500).json({ error: 'Failed to fetch articles' });
   }
 });
+
+app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
 
 module.exports = app;
